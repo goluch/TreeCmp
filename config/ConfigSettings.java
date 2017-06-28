@@ -59,7 +59,7 @@ public class ConfigSettings {
     }
 
 
-    private void readConfigFromFile() throws FileNotFoundException {
+    private void readConfigFromFile() throws FileNotFoundException{
 
         try {
 

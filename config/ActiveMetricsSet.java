@@ -74,6 +74,9 @@ public class ActiveMetricsSet {
 
          return mTable;
     }
-
+     
+     public void clearAllMetrics() {
+    	 metricList.clear();
+     }
 
 }
