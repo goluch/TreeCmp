@@ -138,7 +138,7 @@ public class ConfigSettings {
             Logger.getLogger(ConfigSettings.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(ConfigSettings.class.getName()).log(Level.SEVERE, null, ex);
-            throw new FileNotFoundException("Can not find the configuration file: " + configFile);
+            throw new FileNotFoundException("Can not find the configuration file at: " + configFile);
         } catch (Exception ex) {
             Logger.getLogger(ConfigSettings.class.getName()).log(Level.SEVERE, null, ex);
         }
