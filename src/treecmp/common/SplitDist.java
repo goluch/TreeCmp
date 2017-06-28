@@ -17,6 +17,7 @@
 
 package treecmp.common;
 
+import java.util.ArrayList;
 import java.util.BitSet;
 import pal.misc.IdGroup;
 import pal.tree.Node;
@@ -171,6 +172,54 @@ public class SplitDist {
 
         return bsA;
     }
+
+    //@author Tomek
+    public static ArrayList<Pair<BitSet, Double>> getSplitsWithWeight(Tree t, IdGroup idGroup) {
+
+        int n = t.getExternalNodeCount();
+        int internal = t.getInternalNodeCount();
+        ArrayList<Pair<BitSet, Double>> splits = new ArrayList<Pair<BitSet, Double>>();
+
+        Node curNode = t.getExternalNode(0);
+
+        int ind = 0;
+        Node child;
+        int childCount = 0;
+        int childInd = 0;
+        int leafId;
+        int i;
+
+        while (!curNode.isRoot()) {
+            if (!curNode.isLeaf()) {
+                BitSet bs = new BitSet(n);
+                ind = curNode.getNumber();
+                childCount = curNode.getChildCount();
+                for (i = 0; i < childCount; i++) {
+                    child = curNode.getChild(i);
+                    if (child.isLeaf()) {
+                        leafId = idGroup.whichIdNumber(child.getIdentifier().getName());
+                        bs.set(leafId);
+                    } else {
+                        childInd = child.getNumber();
+                        bs.or(splits.get(childInd).getL());
+                    }
+                }
+                splits.add(childInd, new Pair(bs, curNode.getBranchLength()));
+            }
+            curNode = NodeUtils.postorderSuccessor(curNode);
+        }
+
+        // standardize split (i.e. first index is alway true)
+
+        for (Pair<BitSet, Double> split : splits) {
+            if (split.getL().get(0) == false)
+                split.getL().flip(0, n);
+        }
+
+        return splits;
+
+    }
+
     public static BitSet[] getSplits(Tree t, IdGroup idGroup) {
 
         int n = t.getExternalNodeCount();

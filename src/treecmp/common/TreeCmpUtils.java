@@ -18,6 +18,7 @@
 package treecmp.common;
 
 import java.util.ArrayList;
+
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -25,12 +26,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import edu.princeton.cs.algs4.*;
 import pal.misc.IdGroup;
 import pal.misc.Identifier;
 import pal.misc.SimpleIdGroup;
 import pal.tree.Node;
 import pal.tree.NodeUtils;
 import pal.tree.Tree;
+import pal.tree.TreeManipulator;
+import pal.tree.TreeOperation;
 import pal.tree.TreeTool;
 import pal.tree.TreeUtils;
 
@@ -253,6 +258,38 @@ public static int[][] calcNodalSplittedMatrix(Tree tree, IdGroup idGroup) {
         }
 
         return resultMatrix;
+    }
+    
+	private static Node[] getInternalNodes(Tree t) {
+		int intTNum = t.getInternalNodeCount();
+		Node[] internalNodes = new Node[intTNum];
+		for (int i = 0; i < intTNum; i++) {
+			internalNodes[intTNum - i - 1] = t.getInternalNode(i);
+		}
+		return internalNodes;
+	}
+    
+    public static Node[] getNodesInPreOrder(Tree t){
+        
+        int intTNum = t.getInternalNodeCount();
+        int extTNum = t.getExternalNodeCount();
+        int allTNum = intTNum + extTNum;
+        Node curNode = t.getRoot();
+        Node[] preOrderT = new Node[allTNum];
+        boolean loop = true;
+        int i = 0;
+
+        do {
+            preOrderT[i] = curNode;
+            i++;
+            curNode = NodeUtils.preorderSuccessor(curNode);
+            
+            if (curNode.isRoot()) {
+                loop = false;
+            }
+        }
+        while (loop);
+        return preOrderT;
     }
     
     public static Node[] getNodesInPostOrder(Tree t){
@@ -717,10 +754,350 @@ public static int[][] calcNodalSplittedMatrix(Tree tree, IdGroup idGroup) {
         IdGroup g = new SimpleIdGroup(idTab);
         return g;
     }
+    
+    /**
+     * Note that in order to use the method 
+     * both the input trees must be rooted binary trees.
+     * @param tree1
+     * @param tree2
+     * @param idGroup
+     * @return 
+     */
+    public static IntersectInfoMatrix calcMastIntersectMatrix(Tree tree1, Tree tree2, IdGroup idGroup) {
+        int intT1Num = tree1.getInternalNodeCount();
+        int extT1Num = tree1.getExternalNodeCount();
+
+        int intT2Num = tree2.getInternalNodeCount();
+        int extT2Num = tree2.getExternalNodeCount();
+        IntersectInfoMatrix resultMatrix = new IntersectInfoMatrix(tree1, tree2, idGroup);
+        resultMatrix.init();
+
+        int allT1Num = intT1Num + extT1Num;
+        int allT2Num = intT2Num + extT2Num;
+
+        Node[] postOrderT1 = getNodesInPostOrder(tree1);
+        Node[] postOrderT2 = getNodesInPostOrder(tree2);
+
+        Node aNode, wNode, xNode, yNode, bNode, cNode;
+        boolean aNodeLeaf, wNodeLeaf;
+        int aNodeNum, wNodeNum;
+  
+        for (int i = 0; i < allT1Num; i++) {
+            for (int j = 0; j < allT2Num; j++) {
+                aNode = postOrderT1[i];
+                aNodeNum = aNode.getNumber();
+                aNodeLeaf = aNode.isLeaf();
+
+                wNode = postOrderT2[j];
+                wNodeNum = wNode.getNumber();
+                wNodeLeaf = wNode.isLeaf();
+                
+                if (aNodeLeaf && wNodeLeaf) { //a - leaf node, w - leaf node
+                    continue;
+                } else  if (aNodeLeaf && (!wNodeLeaf)) { //a - leaf node, w - not leaf
+                    xNode = wNode.getChild(0);
+                    yNode = wNode.getChild(1);
+                    short xMastSize = resultMatrix.getSize(aNode, xNode);
+                    short yMastSize = resultMatrix.getSize(aNode, yNode);
+                    short mastSize = xMastSize;
+                    if (yMastSize > xMastSize) {
+                        mastSize = yMastSize;
+                    }
+                    resultMatrix.setT1Ext_T2Int(aNodeNum, wNodeNum, mastSize);
+                } else if (!aNodeLeaf && wNodeLeaf) { //a - not leaf, w - leaf
+                    bNode = aNode.getChild(0);
+                    cNode = aNode.getChild(1);
+                    short bMastSize = resultMatrix.getSize(bNode, wNode);
+                    short cMastSize = resultMatrix.getSize(cNode, wNode);
+                    short mastSize = bMastSize;
+                    if (cMastSize > bMastSize) {
+                        mastSize = cMastSize;
+                    }
+                    resultMatrix.setT1Int_T2Ext(aNodeNum, wNodeNum, mastSize);
+                } else { //a - not leaf, w - not leaf
+                    short mastTab[] = new short[6]; 
+                    bNode = aNode.getChild(0);
+                    cNode = aNode.getChild(1);
+                    xNode = wNode.getChild(0);
+                    yNode = wNode.getChild(1);
+                    mastTab[0] = (short) (resultMatrix.getSize(bNode, xNode) + resultMatrix.getSize(cNode, yNode));
+                    mastTab[1] = (short) (resultMatrix.getSize(bNode, yNode) + resultMatrix.getSize(cNode, xNode));
+                    mastTab[2] = resultMatrix.getSize(aNode, xNode);
+                    mastTab[3] = resultMatrix.getSize(aNode, yNode);
+                    mastTab[4] = resultMatrix.getSize(bNode, wNode);
+                    mastTab[5] = resultMatrix.getSize(cNode, wNode);
+                    short mastSize = max(mastTab);
+                    resultMatrix.setT1Int_T2Int(aNodeNum, wNodeNum, mastSize);
+                }
+            }
+        }
+        return resultMatrix;
+    }
+
+    /**
+      * Note that in order to use the method 
+      * both the input trees can must rooted binary/arbitrary trees.
+      * @param tree1
+      * @param tree2
+      * @param idGroup
+      * @return 
+      */
+     public static IntersectInfoMatrix calcMastIntersectMatrixUni(Tree tree1, Tree tree2, IdGroup idGroup) {
+    	
+    	 
+         int intT1Num = tree1.getInternalNodeCount();
+         int extT1Num = tree1.getExternalNodeCount();
+
+         int intT2Num = tree2.getInternalNodeCount();
+         int extT2Num = tree2.getExternalNodeCount();
+         
+         IntersectInfoMatrix resultMatrix = new IntersectInfoMatrix(tree1, tree2, idGroup);
+         resultMatrix.init();
+
+         int allT1Num = intT1Num + extT1Num;
+         int allT2Num = intT2Num + extT2Num;
+
+         Node[] postOrderT1 = getNodesInPostOrder(tree1);
+         Node[] postOrderT2 = getNodesInPostOrder(tree2);
+
+         Node aNode, wNode, xNode, yNode, bNode, cNode;
+         boolean aNodeLeaf, wNodeLeaf;
+         int aNodeNum, wNodeNum;
+   
+         for (int i = 0; i < allT1Num; i++) {
+             for (int j = 0; j < allT2Num; j++) {
+                 aNode = postOrderT1[i];
+                 aNodeNum = aNode.getNumber();
+                 aNodeLeaf = aNode.isLeaf();
+
+                 wNode = postOrderT2[j];
+                 wNodeNum = wNode.getNumber();
+                 wNodeLeaf = wNode.isLeaf();
+         
+		         if (aNodeLeaf && wNodeLeaf) { //a - leaf node, w - leaf node
+		             continue;
+		         }
+		         else  if (aNodeLeaf && (!wNodeLeaf)) { //a - leaf node, w - not leaf              	 
+		        	Node[] nodes = new Node[wNode.getChildCount()];
+		        	for(int k = 0; k < nodes.length; k++) {
+		        		nodes[k] = wNode.getChild(k);
+		        	}
+		        	int[] mastSizes = new int[nodes.length];
+		        	short mastSize = 0;
+		        	for(int k = 0; k < nodes.length; k++) {
+		        		mastSizes[k] = resultMatrix.getSize(aNode, nodes[k]);
+		                if (mastSizes[k] > mastSize) {
+		                    mastSize = (short)mastSizes[k];
+		                }
+		        	}
+		            resultMatrix.setT1Ext_T2Int(aNodeNum, wNodeNum, mastSize);
+		        } else if (!aNodeLeaf && wNodeLeaf) { //a - not leaf, w - leaf
+		        	Node[] nodes = new Node[aNode.getChildCount()];
+		        	for(int k = 0; k < nodes.length; k++) {
+		        		nodes[k] = aNode.getChild(k);
+		        	}
+		        	int[] mastSizes = new int[nodes.length];
+		        	short mastSize = 0;
+		        	for(int k = 0; k < nodes.length; k++) {
+		        		mastSizes[k] = resultMatrix.getSize(nodes[k], wNode);
+		                if (mastSizes[k] > mastSize) {
+		                    mastSize = (short)mastSizes[k];
+		                }
+		        	}
+		            resultMatrix.setT1Int_T2Ext(aNodeNum, wNodeNum, mastSize);
+		        }
+		        else { //a - not leaf, w - not leaf
+		
+		        	Node[] aNodeChildren = new Node[aNode.getChildCount()];
+		        	Node[] wNodeChildren = new Node[wNode.getChildCount()];
+		        	short actualNodeMastSize, mastSize = 0;
+		        	for(int k = 0; k < wNodeChildren.length; k++) {
+		        		wNodeChildren[k] = wNode.getChild(k);
+		        		actualNodeMastSize = resultMatrix.getSize(aNode, wNodeChildren[k]);
+		        		if (mastSize < actualNodeMastSize) mastSize = actualNodeMastSize;
+		        	}
+		        	for(int k = 0; k < aNodeChildren.length; k++) {
+		        		aNodeChildren[k] = aNode.getChild(k);
+		        		actualNodeMastSize = resultMatrix.getSize(aNodeChildren[k], wNode);
+		        		if (mastSize < actualNodeMastSize) mastSize = actualNodeMastSize;
+		        		
+		        	}
+		        	double[][] mastSizes = new double[aNodeChildren.length][wNodeChildren.length];
+		        	for(int k = 0; k < mastSizes.length; k++) {
+		            	for(int l = 0; l < mastSizes[0].length; l++) {
+		            		mastSizes[k][l] = resultMatrix.getSize(aNodeChildren[k],wNodeChildren[l]);
+		            	}
+		        	}
+		        	AssignmentProblemMAX assignment = new AssignmentProblemMAX(mastSizes);
+		        	actualNodeMastSize = (short)assignment.weight(mastSizes);
+		        	if (mastSize < actualNodeMastSize) mastSize = actualNodeMastSize;
+		        	
+		            resultMatrix.setT1Int_T2Int(aNodeNum, wNodeNum, mastSize);
+		 
+		    	 }
+             }
+         }
+         
+         return resultMatrix;
+     }
+
+ 	public static IntersectInfoMatrix calcUmastIntersectMatrix(Tree t1, Tree t2, IdGroup idGroup) {
+ 		
+ 		Tree tree1 = t1.getCopy();
+ 		Tree tree2 = t2.getCopy();
+ 		
+        int intT1Num = tree1.getInternalNodeCount();
+        int extT1Num = tree1.getExternalNodeCount();
+
+        int intT2Num = tree2.getInternalNodeCount();
+        int extT2Num = tree2.getExternalNodeCount();
+
+        int allT1Num = intT1Num + extT1Num;
+        int allT2Num = intT2Num + extT2Num;
+
+        Node[] internalNodesT1 = getInternalNodes(tree1);
+        Node[] internalNodesT2 = getInternalNodes(tree2);
+
+        Node aNode, wNode, xNode, yNode, bNode, cNode;
+        boolean aNodeLeaf, wNodeLeaf;
+        int aNodeNum, wNodeNum, result = 0;
+        IntersectInfoMatrix resultMatrix = null;
+        
+   	 	for (int t1Index = 0; t1Index < intT1Num; t1Index++) { 
+   	 		
+   	 		TreeUtils.reroot(tree1, internalNodesT1[t1Index]);  
+   	 		
+   	 		for (int t2Index = 0; t2Index < intT2Num; t2Index++) {
+   	 			
+   	 			TreeUtils.reroot(tree2, internalNodesT2[t2Index]); 
+   	 			
+	            IntersectInfoMatrix actResultMatrix = new IntersectInfoMatrix(tree1, tree2, idGroup);
+	            actResultMatrix.init();
+   	 			
+   	 			Node[] postOrderT1 = getNodesInPostOrder(tree1);
+   	 			Node[] postOrderT2 = getNodesInPostOrder(tree2);
+	       		 
+	       	    for (int i = 0; i < allT1Num; i++) {
+	       	    	for (int j = 0; j < allT2Num; j++) {
+	       	    		aNode = postOrderT1[i];
+	                    aNodeNum = aNode.getNumber();
+	                    aNodeLeaf = aNode.isLeaf();
+	
+	                    wNode = postOrderT2[j];
+	                    wNodeNum = wNode.getNumber();
+	                    wNodeLeaf = wNode.isLeaf();
+	            
+	   		         if (aNodeLeaf && wNodeLeaf) { //a - leaf node, w - leaf node
+	   		             continue;
+	   		         }
+	   		         else  if (aNodeLeaf && (!wNodeLeaf)) { //a - leaf node, w - not leaf              	 
+	   		        	Node[] nodes = new Node[wNode.getChildCount()];
+	   		        	for(int k = 0; k < nodes.length; k++) {
+	   		        		nodes[k] = wNode.getChild(k);
+	   		        	}
+	   		        	int[] mastSizes = new int[nodes.length];
+	   		        	short mastSize = 0;
+	   		        	for(int k = 0; k < nodes.length; k++) {
+	   		        		mastSizes[k] = actResultMatrix.getSize(aNode, nodes[k]);
+	   		                if (mastSizes[k] > mastSize) {
+	   		                    mastSize = (short)mastSizes[k];
+	   		                }
+	   		        	}
+	   		            actResultMatrix.setT1Ext_T2Int(aNodeNum, wNodeNum, mastSize);
+		   		        } else if (!aNodeLeaf && wNodeLeaf) { //a - not leaf, w - leaf
+		   		        	Node[] nodes = new Node[aNode.getChildCount()];
+		   		        	for(int k = 0; k < nodes.length; k++) {
+		   		        		nodes[k] = aNode.getChild(k);
+		   		        	}
+		   		        	int[] mastSizes = new int[nodes.length];
+		   		        	short mastSize = 0;
+		   		        	for(int k = 0; k < nodes.length; k++) {
+		   		        		mastSizes[k] = actResultMatrix.getSize(nodes[k], wNode);
+		   		                if (mastSizes[k] > mastSize) {
+		   		                    mastSize = (short)mastSizes[k];
+		   		                }
+		   		        	}
+		   		            actResultMatrix.setT1Int_T2Ext(aNodeNum, wNodeNum, mastSize);
+		   		        }
+		   		        else { //a - not leaf, w - not leaf
+		   		
+		   		        	Node[] aNodeChildren = new Node[aNode.getChildCount()];
+		   		        	Node[] wNodeChildren = new Node[wNode.getChildCount()];
+		   		        	short actualNodeMastSize, mastSize = 0;
+		   		        	for(int k = 0; k < wNodeChildren.length; k++) {
+		   		        		wNodeChildren[k] = wNode.getChild(k);
+		   		        		actualNodeMastSize = actResultMatrix.getSize(aNode, wNodeChildren[k]);
+		   		        		if (mastSize < actualNodeMastSize) mastSize = actualNodeMastSize;
+		   		        	}
+		   		        	for(int k = 0; k < aNodeChildren.length; k++) {
+		   		        		aNodeChildren[k] = aNode.getChild(k);
+		   		        		actualNodeMastSize = actResultMatrix.getSize(aNodeChildren[k], wNode);
+		   		        		if (mastSize < actualNodeMastSize) mastSize = actualNodeMastSize;
+		   		        		
+		   		        	}
+		   		        	double[][] mastSizes = new double[aNodeChildren.length][wNodeChildren.length];
+		   		        	for(int k = 0; k < mastSizes.length; k++) {
+		   		            	for(int l = 0; l < mastSizes[0].length; l++) {
+		   		            		mastSizes[k][l] = actResultMatrix.getSize(aNodeChildren[k],wNodeChildren[l]);
+		   		            	}
+		   		        	}
+		   		        	AssignmentProblemMAX assignment = new AssignmentProblemMAX(mastSizes);
+		   		        	actualNodeMastSize = (short)assignment.weight(mastSizes);
+		   		        	if (mastSize < actualNodeMastSize) mastSize = actualNodeMastSize;
+		   		        	
+		   		            actResultMatrix.setT1Int_T2Int(aNodeNum, wNodeNum, mastSize);
+		   		            }
+	   		         }
+	       	    }
+	       	    if (resultMatrix == null || (result < actResultMatrix.getSize(tree1.getRoot(), tree2.getRoot()))) {	       			  
+	       	    	resultMatrix = actResultMatrix;
+	       	    	result = actResultMatrix.getSize(tree1.getRoot(), tree2.getRoot());
+	       	    }
+	       	}       	 
+	   	}
+        
+        return resultMatrix;
+ 	}
+
+	/**
+	*
+	* @param t
+	* @param preOrderNodes
+	* @param externalNodesDepthTab
+	* @param internalNodesDepthTab
+	*/
+	public static void calcNodeDepth(Tree t, Node[] preOrderNodes, short[] externalNodesDepthTab, short[] internalNodesDepthTab) {
+	   int parentNum, curNodeNum;
+	   Node curNode;
+	   short depth;
+	   for (int i = 0; i < preOrderNodes.length; i++) {
+	       curNode = preOrderNodes[i];
+	       curNodeNum = curNode.getNumber();
+	       if (curNode.isRoot()) {
+	           internalNodesDepthTab[curNodeNum] = 0;
+	       } else {
+	           parentNum = curNode.getParent().getNumber();
+	           depth = (short) (internalNodesDepthTab[parentNum] + 1);
+	           if (curNode.isLeaf()) {
+	               externalNodesDepthTab[curNodeNum] = depth;
+	           } else {
+	               internalNodesDepthTab[curNodeNum] = depth;
+	           }
+	       }
+	   }
+	}
+	
+	public static short max (short [] tab){
+	   short currMax = tab[0];
+	   for (int i = 1; i < tab.length; i++){
+	       if (tab[i] > currMax){
+	           currMax = tab[i];
+	       }
+	   }
+	   return currMax;
+	}
 
 }
-
-
 
 class TCUtilsNode{
      private List< List<Integer> > leafSets;

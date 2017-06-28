@@ -61,12 +61,16 @@ public class CommandLineParser {
                                         " rf - the Robinson-Foulds metric,\n"+
                                         " pd - the Path Difference metric,\n"+
                                         " qt - the Quartet metric,\n"+
+                                        " um - the UMAST metric,\n"+
+                                        " wrf - the Weighted Robinson-Foulds metric,\n"+
                                         "Metrics for rooted trees:\n" +
                                         " mc - the Matching Cluster metric,\n"+
                                         " rc - the Robinson-Foulds metric based on clusters,\n" +
                                         " ns - the Nodal Splitted metric with L2 norm,\n"+
                                         " tt - the Triples metric,\n"+
                                         " mp - the Matching Pair metric.\n"+
+                                        " mt1 - the MAST metric (ver. 1).\n"+
+                                        " mt2 - the MAST metric (ver. 2)().\n"+
                                         "Example: -d ms rf\n";
 
     private final static String D_ARG = "metrics";
@@ -240,6 +244,7 @@ public class CommandLineParser {
                  */
                 //set active metrics
                 ActiveMetricsSet AMSet = ActiveMetricsSet.getActiveMetricsSet();
+                AMSet.clearAllMetrics();
                 DMSet = DefinedMetricsSet.getDefinedMetricsSet();
                 DMetrics = DMSet.getDefinedMetrics();
 
