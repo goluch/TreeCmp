@@ -8,6 +8,6 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="pal" exported="" />
-    <orderEntry type="module" module-name="main" exported="" />
+    <orderEntry type="module" module-name="commons-cli" exported="" />
   </component>
 </module>
