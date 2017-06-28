@@ -17,6 +17,7 @@
 package treecmp.config;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -50,7 +51,7 @@ public class ConfigSettings {
         return dataDir;
     }
     
-     public static void initConfig(String configFile, String dataDir) {
+     public static void initConfig(String configFile, String dataDir) throws FileNotFoundException {
         if (config == null) {
             config = new ConfigSettings(configFile, dataDir);
             config.readConfigFromFile();
@@ -58,7 +59,7 @@ public class ConfigSettings {
     }
 
 
-    private void readConfigFromFile() {
+    private void readConfigFromFile() throws FileNotFoundException {
 
         try {
 
@@ -137,6 +138,7 @@ public class ConfigSettings {
             Logger.getLogger(ConfigSettings.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
             Logger.getLogger(ConfigSettings.class.getName()).log(Level.SEVERE, null, ex);
+            throw new FileNotFoundException("Can not find the configuration file: " + configFile);
         } catch (Exception ex) {
             Logger.getLogger(ConfigSettings.class.getName()).log(Level.SEVERE, null, ex);
         }

@@ -17,6 +17,7 @@
 
 package treecmp;
 
+import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.logging.Level;
@@ -38,7 +39,7 @@ public class Main {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
 
        String runtimePathTemp = Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();
        if (runtimePathTemp.indexOf('+') != -1){
@@ -71,7 +72,12 @@ public class Main {
            dataDir = tempPath + PersistentInfo.dataPath;
        }
 
-        ConfigSettings.initConfig(conf, dataDir);
+        try {
+            ConfigSettings.initConfig(conf, dataDir);
+        } catch (FileNotFoundException ex) {
+            System.out.println(ex.getMessage());
+            return;
+        }
         Command cmd=CommandLineParser.run(args);
 
         if(cmd!=null)
