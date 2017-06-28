@@ -1,3 +1,6 @@
 [submodule "pal"]
 	path = pal
 	url = https://github.com/goluch/pal
+[submodule "commons-cli"]
+	path = commons-cli
+	url = https://github.com/apache/commons-cli
