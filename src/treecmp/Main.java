@@ -39,7 +39,7 @@ public class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-      
+
        String runtimePathTemp = Main.class.getProtectionDomain().getCodeSource().getLocation().getPath();
        if (runtimePathTemp.indexOf('+') != -1){
            System.out.println("Unsupported character in TreeCmp path!\n"
@@ -54,15 +54,15 @@ public class Main {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
 
- 
+
        String conf="";
        String dataDir="";
 
        String version = Main.class.getPackage().getImplementationVersion();
 
        if(version==null){
-           conf = runtimePath + "../" + PersistentInfo.configFile;
-           dataDir = runtimePath + "../" + PersistentInfo.dataPath;
+           conf = runtimePath + "../../" + PersistentInfo.configFile;
+           dataDir = runtimePath + "../../" + PersistentInfo.dataPath;
 
        }else{
            String tempPath = runtimePath.substring(0,runtimePath.lastIndexOf("/")+1);
@@ -88,12 +88,12 @@ public class Main {
 
             TreeReader reader = new TreeReader(settings.getInputFile());
             //scanning all content of the input file
-            
+
             if(reader.open()==-1){
                 //an error occured during reading the input file
                 return;
             }
-                
+
             System.out.println(TimeDate.now()+": Start of scanning input file: " + settings.getInputFile());
             int numberOfTrees = reader.scan();
             reader.close();
