@@ -75,6 +75,7 @@ public class Main {
         try {
             ConfigSettings.initConfig(conf, dataDir);
         } catch (FileNotFoundException ex) {
+            //can not find the configuration file
             System.out.println(ex.getMessage());
             return;
         }
