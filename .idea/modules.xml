@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/commons-cli/src/main/commons-cli.iml" filepath="$PROJECT_DIR$/commons-cli/src/main/commons-cli.iml" />
-      <module fileurl="file://$PROJECT_DIR$/pal/pal.iml" filepath="$PROJECT_DIR$/pal/pal.iml" />
       <module fileurl="file://$PROJECT_DIR$/treeCmp.iml" filepath="$PROJECT_DIR$/treeCmp.iml" />
     </modules>
   </component>
