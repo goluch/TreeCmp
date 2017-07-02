@@ -115,7 +115,7 @@
             <unif_data>unif_MT.txt</unif_data>
             <yule_data>yule_MT.txt</yule_data>
 			<rooted>true</rooted>
-            <fullname>MAST</fullname>
+            <fullname>MAST_1</fullname>
         </metric>
 		<metric>
             <name>MAST_2</name>
@@ -125,7 +125,7 @@
             <unif_data>unif_MT.txt</unif_data>
             <yule_data>yule_MT.txt</yule_data>
 			<rooted>true</rooted>
-            <fullname>MAST_NEW</fullname>
+            <fullname>MAST_2</fullname>
         </metric>
     </defined_metrics>
     <reporting>
