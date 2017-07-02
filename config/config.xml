@@ -45,7 +45,6 @@
             <description>-Unrooted maximum agreement subtree distance</description>
             <unif_data>unif_MT.txt</unif_data>
             <yule_data>yule_MT.txt</yule_data>
-			<rooted>true</rooted>
             <fullname>UMAST</fullname>
         </metric>
         <metric>
